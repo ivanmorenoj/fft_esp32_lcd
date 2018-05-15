@@ -39,16 +39,19 @@ LiquidCrystal lcd(13, 12, 14, 27, 26, 25);  // init the library
 /*
 These values can be changed in order to evaluate the functions
 */
-#define BANDS   20  //num of bands
-#define CHANNEL A0
+#define BANDS           20  //num of bands
+#define MAX_FRECUENCY   16000
+#define CHANNEL         A0
 
 const uint16_t samples = 1024; //This value MUST ALWAYS be a power of 2
-const double samplingFrequency = 44000; //Hz
+const double samplingFrequency = 40000; //Hz
 
 unsigned int sampling_period_us;
 unsigned long microseconds;
 unsigned int *bandFft;  //pointer to bands
-uint16_t base_freq = 20000 / BANDS;
+
+const float freqFactor =  1.28;
+const float base_freq = MAX_FRECUENCY/pow(freqFactor,BANDS-1);
 /*
 These are the input and output vectors
 Input vectors receive computed results from FFT
@@ -94,13 +97,13 @@ void loop()
   calcAvgbyBand(vReal,samples>>1,bandFft);
   //showFftband(bandFft);
   //Serial.println("<<=======================================================>>");
-  normalizeBand(bandFft,1000,10000,32);
+  normalizeBand(bandFft,100,17000,32);
   //showFftband(bandFft);
 
   set_level(bandFft);
 
   //while(1);
-  delay(50);
+  delay(70);
 }
 void showFftband(unsigned int *ptrBand){
   uint16_t freq = base_freq;
@@ -117,16 +120,14 @@ void calcAvgbyBand(double *ptrData,uint16_t bufSize,unsigned int *ptrBand){
   float freq;
   uint16_t freqbase = base_freq,nSamp=0;
   uint8_t j=0;
-  for(uint16_t i = 0; i<bufSize; i++){
+  for(uint16_t i = 2; i<bufSize; i++){
       freq = (i * 1.0 * samplingFrequency) / samples;
-      if(freq < freqbase){
-        average += ptrData[i];
-        nSamp++;
-      }
-      else{
+      average += ptrData[i];
+      nSamp++;
+      if(freq > freqbase){
         average /= 1.0 + nSamp;          
         ptrBand[j++] = int(average);
-        freqbase = base_freq * (j+1);
+        freqbase *= freqFactor;
         average = 0;
         nSamp = 0;
       }
@@ -137,7 +138,7 @@ void calcAvgbyBand(double *ptrData,uint16_t bufSize,unsigned int *ptrBand){
 void normalizeBand(unsigned int *ptrBand,unsigned int noise,unsigned int max_input,uint8_t max_output){
   unsigned int aux;
   for (uint8_t i = 0; i < BANDS; i++){
-    aux = i==0? ptrBand[i]/2: ptrBand[i];
+    aux = ptrBand[i];
     if (aux > noise){
       aux = aux > max_input? max_input : aux - noise;
       ptrBand[i] = (aux * max_output) / max_input;
@@ -161,4 +162,11 @@ void set_level(unsigned int *ptr){
       lcd.write(n);
     }
   }
+}
+double pow(double n,uint8_t e){
+  double aux = n;
+  for (int i = 0; i < e; ++i){
+    aux*=n;
+  }
+  return aux;
 }
