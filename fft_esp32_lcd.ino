@@ -70,7 +70,28 @@ void setup(){
     lcd.createChar(i, (byte *)characters[i]); //set costom character
   }
   Serial.print("Base Frecuency per Band :> ");
-  Serial.println(base_freq); 
+  Serial.println(base_freq);
+  lcd.clear();
+  for(float y=0,f = base_freq,i=1,last = 10;f<=MAX_FRECUENCY;f*=freqFactor){
+    if(++y>4){
+      y = 1;
+      delay(2000);
+      lcd.clear();
+    }
+    lcd.print("F0 BW");
+    lcd.print(int(i++));
+    lcd.print(": ");
+    /*lcd.print(int(last));
+    lcd.print(" <=> ");
+    lcd.print(int(f));
+    lcd.print(" >> ");*/
+    lcd.print(int(last+(f-last)/2.0));
+    lcd.print(" Hz");
+
+    lcd.setCursor(0,int(y));
+    last = f;
+  }
+  delay(1000);
 }
 
 void loop()
@@ -117,8 +138,8 @@ void showFftband(unsigned int *ptrBand){
 }
 void calcAvgbyBand(double *ptrData,uint16_t bufSize,unsigned int *ptrBand){
   double average=0;
-  float freq;
-  uint16_t freqbase = base_freq,nSamp=0;
+  float freq,freqbase = base_freq;
+  uint16_t nSamp=0;
   uint8_t j=0;
   for(uint16_t i = 2; i<bufSize; i++){
       freq = (i * 1.0 * samplingFrequency) / samples;
