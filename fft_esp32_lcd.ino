@@ -1,8 +1,8 @@
 /*
   Example that use fft for show in a lcd display, divided by symmetric bands
 
-  Copyright (c) Ivan Moreno 2018 
-  
+  Copyright (c) Ivan Moreno 2018
+
   This example use the arduinoFFT, you can fond the library in https://github.com/kosme/arduinoFFT
   also use a LiquidCrystal, you can fond the library in https://github.com/arduino-libraries/LiquidCrystal
 
@@ -64,8 +64,8 @@ void setup(){
   bandFft = new unsigned int[BANDS]; // init the vector
 
   sampling_period_us = round(1000000*(1.0/samplingFrequency));
-  
-  lcd.begin(20,4);  //init the lcd 20x4 
+
+  lcd.begin(20,4);  //init the lcd 20x4
   for(uint8_t i= 0;i<8;i++){
     lcd.createChar(i, (byte *)characters[i]); //set costom character
   }
@@ -79,15 +79,19 @@ void setup(){
       lcd.clear();
     }
     lcd.print("F0 BW");
+    Serial.print("BW");
+    Serial.print((int)i);
     lcd.print(int(i++));
     lcd.print(": ");
-    /*lcd.print(int(last));
-    lcd.print(" <=> ");
-    lcd.print(int(f));
-    lcd.print(" >> ");*/
+    Serial.print(" : ");
+    Serial.print(int(last));
+    Serial.print(" <=> ");
+    Serial.print(int(f));
+    Serial.print(" >> ");
+    Serial.print(last+(f-last)/2.0);
     lcd.print(int(last+(f-last)/2.0));
     lcd.print(" Hz");
-
+    Serial.println(" Hz");
     lcd.setCursor(0,int(y));
     last = f;
   }
@@ -109,31 +113,33 @@ void loop()
   FFT.Windowing(vReal, samples, FFT_WIN_TYP_HAMMING, FFT_FORWARD);  /* Weigh data */
   FFT.Compute(vReal, vImag, samples, FFT_FORWARD); /* Compute FFT */
   FFT.ComplexToMagnitude(vReal, vImag, samples); /* Compute magnitudes */
-  
   //double x = FFT.MajorPeak(vReal, samples, samplingFrequency);
-  
+
   //Serial.print("frequency most dominant >> ");
+
   //Serial.println(x, 6); //Print out what frequency is the most dominant.
 
   calcAvgbyBand(vReal,samples>>1,bandFft);
   //showFftband(bandFft);
   //Serial.println("<<=======================================================>>");
-  normalizeBand(bandFft,100,17000,32);
+  normalizeBand(bandFft,2000,30000,32);
   //showFftband(bandFft);
 
   set_level(bandFft);
 
   //while(1);
-  delay(70);
+  delay(100);
 }
 void showFftband(unsigned int *ptrBand){
   uint16_t freq = base_freq;
+  float last = base_freq;
   for (uint8_t i = 0; i < BANDS; ++i){
     Serial.print(" Frecuency ");
-    Serial.print(freq - base_freq/2);
+    Serial.print(last+(freq-last)/2.0);
     Serial.print(" ->  ");
     Serial.println(bandFft[i]);
-    freq = base_freq * (i+2);
+    freq *= freqFactor;
+    last = freq;
   }
 }
 void calcAvgbyBand(double *ptrData,uint16_t bufSize,unsigned int *ptrBand){
@@ -141,12 +147,12 @@ void calcAvgbyBand(double *ptrData,uint16_t bufSize,unsigned int *ptrBand){
   float freq,freqbase = base_freq;
   uint16_t nSamp=0;
   uint8_t j=0;
-  for(uint16_t i = 2; i<bufSize; i++){
+  for(uint16_t i = 5; i<bufSize; i++){
       freq = (i * 1.0 * samplingFrequency) / samples;
       average += ptrData[i];
       nSamp++;
       if(freq > freqbase){
-        average /= 1.0 + nSamp;          
+        average /= 1.0 + nSamp;
         ptrBand[j++] = int(average);
         freqbase *= freqFactor;
         average = 0;
@@ -186,7 +192,7 @@ void set_level(unsigned int *ptr){
 }
 double pow(double n,uint8_t e){
   double aux = n;
-  for (int i = 0; i < e; ++i){
+  for (int i = 1; i < e; ++i){
     aux*=n;
   }
   return aux;
