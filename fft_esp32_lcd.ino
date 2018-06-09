@@ -61,6 +61,7 @@ double vImag[samples];
 
 void setup(){
   Serial.begin(115200);
+  pinMode(18, INPUT);
   bandFft = new unsigned int[BANDS]; // init the vector
 
   sampling_period_us = round(1000000*(1.0/samplingFrequency));
@@ -75,27 +76,27 @@ void setup(){
   for(float y=0,f = base_freq,i=1,last = 10;f<=MAX_FRECUENCY;f*=freqFactor){
     if(++y>4){
       y = 1;
-      delay(2000);
-      lcd.clear();
+      //delay(2000);
+      //lcd.clear();
     }
-    lcd.print("F0 BW");
+    //lcd.print("F0 BW");
     Serial.print("BW");
     Serial.print((int)i);
-    lcd.print(int(i++));
-    lcd.print(": ");
+    //lcd.print(int(i++));
+    //lcd.print(": ");
     Serial.print(" : ");
     Serial.print(int(last));
     Serial.print(" <=> ");
     Serial.print(int(f));
     Serial.print(" >> ");
     Serial.print(last+(f-last)/2.0);
-    lcd.print(int(last+(f-last)/2.0));
-    lcd.print(" Hz");
+    //lcd.print(int(last+(f-last)/2.0));
+    //lcd.print(" Hz");
     Serial.println(" Hz");
-    lcd.setCursor(0,int(y));
+    //lcd.setCursor(0,int(y));
     last = f;
   }
-  delay(1000);
+  //delay(1000);
 }
 
 void loop()
@@ -127,7 +128,7 @@ void loop()
 
   set_level(bandFft);
 
-  //while(1);
+  while(digitalRead(18));
   delay(100);
 }
 void showFftband(unsigned int *ptrBand){
