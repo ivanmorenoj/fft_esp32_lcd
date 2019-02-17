@@ -46,9 +46,9 @@ These values can be changed in order to evaluate the functions
 const uint16_t samples = 1024; //This value MUST ALWAYS be a power of 2
 const double samplingFrequency = 40000; //Hz
 
-unsigned int sampling_period_us;
+uint16_t sampling_period_us;
 unsigned long microseconds;
-unsigned int *bandFft;  //pointer to bands
+uint16_t *bandFft;  //pointer to bands
 
 const float freqFactor =  1.28;
 const float base_freq = MAX_FRECUENCY/pow(freqFactor,BANDS-1);
@@ -62,7 +62,7 @@ double vImag[samples];
 void setup(){
   Serial.begin(115200);
   pinMode(18, INPUT);
-  bandFft = new unsigned int[BANDS]; // init the vector
+  bandFft = new uint16_t[BANDS]; // init the vector
 
   sampling_period_us = round(1000000*(1.0/samplingFrequency));
 
@@ -131,7 +131,7 @@ void loop()
   while(digitalRead(18));
   delay(100);
 }
-void showFftband(unsigned int *ptrBand){
+void showFftband(uint16_t *ptrBand){
   uint16_t freq = base_freq;
   float last = base_freq;
   for (uint8_t i = 0; i < BANDS; ++i){
@@ -143,7 +143,7 @@ void showFftband(unsigned int *ptrBand){
     last = freq;
   }
 }
-void calcAvgbyBand(double *ptrData,uint16_t bufSize,unsigned int *ptrBand){
+void calcAvgbyBand(double *ptrData,uint16_t bufSize,uint16_t *ptrBand){
   double average=0;
   float freq,freqbase = base_freq;
   uint16_t nSamp=0;
@@ -163,8 +163,8 @@ void calcAvgbyBand(double *ptrData,uint16_t bufSize,unsigned int *ptrBand){
   average /= 1.0 * nSamp;
   ptrBand[j] = int(average);
 }
-void normalizeBand(unsigned int *ptrBand,unsigned int noise,unsigned int max_input,uint8_t max_output){
-  unsigned int aux;
+void normalizeBand(uint16_t *ptrBand,uint16_t noise,uint16_t max_input,uint8_t max_output){
+  uint16_t aux;
   for (uint8_t i = 0; i < BANDS; i++){
     aux = ptrBand[i];
     if (aux > noise){
@@ -175,7 +175,7 @@ void normalizeBand(unsigned int *ptrBand,unsigned int noise,unsigned int max_inp
       ptrBand[i] = 0;
   }
 }
-void set_level(unsigned int *ptr){
+void set_level(uint16_t *ptr){
   byte a,n,x,y;
   for(y=0;y<4;++y){
     lcd.setCursor(0,y);
@@ -183,7 +183,7 @@ void set_level(unsigned int *ptr){
       n = (byte)*(ptr + x );
       a = n>>3;
       if (a == 3-y){
-        n = n>=8? n - (n>>3)*8  : n;
+        n = n>=8? n - a*8  : n;
         n = n>0? n-1 : ' ';
       }else
         n = a>=(3-y)? 7:' ';

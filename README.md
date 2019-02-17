@@ -1,7 +1,12 @@
 # fft_esp32_lcd
   Example that use fft for show in a lcd display, divided by symmetric bands
+ 
+  
+# Example
 
-  Copyright (c) Ivan Moreno 2018 
+[![IMAGE ALT TEXT](http://img.youtube.com/vi/qwlk2bneMw0/0.jpg)](http://www.youtube.com/watch?v=qwlk2bneMw0 "Audio spectrum analyzer with esp32 and lcd 4x20")
+
+  Copyright (c) Ivan Moreno 2018
   
   This example use the arduinoFFT, you can fond the library in https://github.com/kosme/arduinoFFT
   also use a LiquidCrystal, you can fond the library in https://github.com/arduino-libraries/LiquidCrystal
